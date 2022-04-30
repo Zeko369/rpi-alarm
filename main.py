@@ -1,7 +1,9 @@
 import time
 import json
 import datetime
+import random
 
+import vlc
 from displayhatmini import DisplayHATMini
 from PIL import Image, ImageDraw, ImageFont
 
@@ -9,14 +11,19 @@ from alarm import Alarm
 from buttons import SerialListener
 
 PORT = '/dev/ttyACM0'
-ALARMS = [Alarm(23, 35), Alarm(7, 0), Alarm(7, 15)]
+ALARMS = [Alarm(0, 47), Alarm(7, 0), Alarm(7, 15)]
 
+TRIGGER_ALARM_ON_BOOT = True
+if TRIGGER_ALARM_ON_BOOT:
+    now = datetime.datetime.now()
+    ALARMS.append(Alarm(now.hour, now.minute))
 
 width = DisplayHATMini.WIDTH
 height = DisplayHATMini.HEIGHT
 buffer = Image.new("RGB", (width, height))
 draw = ImageDraw.Draw(buffer)
 LARGE_FONT = ImageFont.truetype("FiraCode-Bold.ttf", 64)
+MEDIUM = ImageFont.truetype("FiraCode-Bold.ttf", 40)
 REGULAR_FONT = ImageFont.truetype("Roboto-Regular.ttf", 24)
 
 displayhatmini = DisplayHATMini(buffer, backlight_pwm=True)
@@ -65,8 +72,118 @@ if __name__ == '__main__':
             )
 
             for alarm in alarms_to_call:
-                print(alarm)
-                time.sleep(0.5)
+                p = vlc.MediaPlayer('viva-la-vida.mp3')
+                p.audio_set_volume(50)
+                p.play()
+
+                t = time.time()
+
+                stage = 'A'
+
+                a_guess = 0
+
+                x_num = random.randint(-9, 9)
+                y_num = random.randint(-9, 9)
+                z_num = random.randint(-50, 50)
+                w_num = x_num * y_num + z_num
+
+                time_since_c = 0
+
+                count = 0
+                while True:
+                    draw.rectangle((0, 0, width, height), (0, 0, 0))
+                    time_text = 'WAKE UP'
+                    w, h = draw.textsize(time_text, font=LARGE_FONT)
+                    draw.text(((width-w)/2, 0), time_text,
+                              fill="white", font=LARGE_FONT)
+
+                    time_text = now.strftime(f"%H:%M")
+
+                    w, h = draw.textsize(time_text, font=LARGE_FONT)
+                    draw.text(((width-w)/2, 64), time_text,
+                              fill="white", font=LARGE_FONT)
+
+                    if (time.time() - t) > 45:
+                        p.audio_set_volume(125)
+                    elif (time.time() - t) > 25:
+                        p.audio_set_volume(100)
+                    elif (time.time() - t) > 10:
+                        p.audio_set_volume(75)
+
+                    if time.time() - time_since_c > 20:
+                        x_num = random.randint(-9, 9)
+                        y_num = random.randint(-9, 9)
+                        z_num = random.randint(-50, 50)
+                        w_num = x_num * y_num + z_num
+                        time_since_c = time.time()
+
+                    if stage in 'AB':
+                        time_text = f'{stage}: {count}/20'
+                        w, h = draw.textsize(time_text, font=MEDIUM)
+                        draw.text(((width-w)/2, 130), time_text,
+                                  fill="white", font=MEDIUM)
+                    else:
+                        op = '+' if z_num > 0 else ''
+                        time_text = f'x*{y_num}{op}{z_num}={w_num}'
+                        w, h = draw.textsize(time_text, font=MEDIUM)
+                        draw.text(((width-w)/2, 130), time_text,
+                                  fill="white", font=MEDIUM)
+                        time_text = f"{a_guess} ({int(time.time() - time_since_c)}/20)"
+                        w, h = draw.textsize(time_text, font=MEDIUM)
+                        draw.text(((width-w)/2, 190), time_text,
+                                  fill="white", font=MEDIUM)
+
+                    if stage == 'C':
+                        if serial.state.a:
+                            while serial.state.a:
+                                pass
+                            a_guess += 1
+                            if a_guess > 9:
+                                a_guess = 9
+                        if serial.state.b:
+                            while serial.state.b:
+                                pass
+                            a_guess -= 1
+                            if a_guess < -9:
+                                a_guess = -9
+                        if serial.state.c:
+                            while serial.state.c:
+                                pass
+
+                            if a_guess == x_num:
+                                break
+                            else:
+                                draw.rectangle(
+                                    (0, 0, width, height), (0, 0, 0))
+                                time_text = 'WRONG'
+                                w, h = draw.textsize(
+                                    time_text, font=LARGE_FONT)
+                                draw.text(((width-w)/2, 20), time_text,
+                                          fill="white", font=LARGE_FONT)
+                                time.sleep(1)
+                                a_guess = 0
+                                continue
+
+                    if stage == 'A' and serial.state.a:
+                        while serial.state.a:
+                            pass
+                        count += 1
+
+                        if count >= 20:
+                            count = 0
+                            stage = 'B'
+                    if stage == 'B' and serial.state.b:
+                        while serial.state.a:
+                            pass
+                        count += 1
+
+                        if count >= 20:
+                            stage = 'C'
+                            time_since_c = time.time()
+
+                    displayhatmini.display()
+
+                p.stop()
                 alarms_done.append(alarm)
 
             draw.rectangle((0, 0, width, height), (0, 0, 0))
