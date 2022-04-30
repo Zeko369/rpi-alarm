@@ -4,6 +4,7 @@ import datetime
 import random
 
 import vlc
+import requests
 from displayhatmini import DisplayHATMini
 from PIL import Image, ImageDraw, ImageFont
 
@@ -11,7 +12,8 @@ from alarm import Alarm
 from buttons import SerialListener
 
 PORT = '/dev/ttyACM0'
-ALARMS = [Alarm(7, 0), Alarm(7, 15)]
+ALARMS = [Alarm(7, 30), Alarm(7, 40), Alarm(7, 50), Alarm(8, 0)]
+SLEEP_ALL_ENDPOINT = 'http://192.168.0.193:8123/api/webhook/sleep_all'
 
 TRIGGER_ALARM_ON_BOOT = False
 if TRIGGER_ALARM_ON_BOOT:
@@ -211,6 +213,11 @@ if __name__ == '__main__':
                 while serial.state.a:
                     pass
                 p.stop()
+
+            if serial.state.b and serial.state.a:
+                requests.post(SLEEP_ALL_ENDPOINT)
+                while serial.state.a or serial.state.b:
+                    pass
 
             if timeout <= time.time() and timeout_enabled:
                 displayhatmini.set_backlight(0)
