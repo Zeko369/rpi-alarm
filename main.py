@@ -11,9 +11,9 @@ from alarm import Alarm
 from buttons import SerialListener
 
 PORT = '/dev/ttyACM0'
-ALARMS = [Alarm(0, 47), Alarm(7, 0), Alarm(7, 15)]
+ALARMS = [Alarm(7, 0), Alarm(7, 15)]
 
-TRIGGER_ALARM_ON_BOOT = True
+TRIGGER_ALARM_ON_BOOT = False
 if TRIGGER_ALARM_ON_BOOT:
     now = datetime.datetime.now()
     ALARMS.append(Alarm(now.hour, now.minute))
@@ -203,6 +203,14 @@ if __name__ == '__main__':
                 w, h = draw.textsize(tmp_text, font=REGULAR_FONT)
                 draw.text(((width - w) / 2, 100 + h * i), tmp_text,
                           font=REGULAR_FONT, fill="white")
+
+            if serial.state.a:
+                p = vlc.MediaPlayer('viva-la-vida.mp3')
+                p.audio_set_volume(50)
+                p.play()
+                while serial.state.a:
+                    pass
+                p.stop()
 
             if timeout <= time.time() and timeout_enabled:
                 displayhatmini.set_backlight(0)
