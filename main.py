@@ -15,7 +15,7 @@ PORT = '/dev/ttyACM0'
 ALARMS = [Alarm(7, 30), Alarm(7, 40), Alarm(7, 50), Alarm(8, 0)]
 SLEEP_ALL_ENDPOINT = 'http://192.168.0.193:8123/api/webhook/sleep_all'
 
-TRIGGER_ALARM_ON_BOOT = False
+TRIGGER_ALARM_ON_BOOT = True
 if TRIGGER_ALARM_ON_BOOT:
     now = datetime.datetime.now()
     ALARMS.append(Alarm(now.hour, now.minute))
@@ -88,6 +88,7 @@ if __name__ == '__main__':
                 y_num = random.randint(-9, 9)
                 z_num = random.randint(-50, 50)
                 w_num = x_num * y_num + z_num
+                displayhatmini.set_backlight(1)
 
                 time_since_c = 0
 
@@ -206,6 +207,11 @@ if __name__ == '__main__':
                 draw.text(((width - w) / 2, 100 + h * i), tmp_text,
                           font=REGULAR_FONT, fill="white")
 
+            if serial.state.b and serial.state.a:
+                requests.post(SLEEP_ALL_ENDPOINT)
+                while serial.state.a or serial.state.b:
+                    pass
+
             if serial.state.a:
                 p = vlc.MediaPlayer('viva-la-vida.mp3')
                 p.audio_set_volume(50)
@@ -213,11 +219,6 @@ if __name__ == '__main__':
                 while serial.state.a:
                     pass
                 p.stop()
-
-            if serial.state.b and serial.state.a:
-                requests.post(SLEEP_ALL_ENDPOINT)
-                while serial.state.a or serial.state.b:
-                    pass
 
             if timeout <= time.time() and timeout_enabled:
                 displayhatmini.set_backlight(0)
