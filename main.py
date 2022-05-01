@@ -15,7 +15,7 @@ PORT = '/dev/ttyACM0'
 ALARMS = [Alarm(7, 30), Alarm(7, 40), Alarm(7, 50), Alarm(8, 0)]
 SLEEP_ALL_ENDPOINT = 'http://192.168.0.193:8123/api/webhook/sleep_all'
 
-TRIGGER_ALARM_ON_BOOT = True
+TRIGGER_ALARM_ON_BOOT = False
 if TRIGGER_ALARM_ON_BOOT:
     now = datetime.datetime.now()
     ALARMS.append(Alarm(now.hour, now.minute))
