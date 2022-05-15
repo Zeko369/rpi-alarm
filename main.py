@@ -12,7 +12,8 @@ from alarm import Alarm
 from buttons import SerialListener
 
 PORT = '/dev/ttyACM0'
-ALARMS = [Alarm(7, 30), Alarm(7, 40), Alarm(7, 50), Alarm(8, 0)]
+# ALARMS = [Alarm(9, 15), Alarm(9, 25), Alarm(9, 35), Alarm(9, 45), Alarm(10, 0), Alarm(10, 15)]
+ALARMS = [Alarm(8, 30), Alarm(8, 45), Alarm(9, 0), Alarm(9, 15)]
 SLEEP_ALL_ENDPOINT = 'http://192.168.0.193:8123/api/webhook/sleep_all'
 
 TRIGGER_ALARM_ON_BOOT = False
