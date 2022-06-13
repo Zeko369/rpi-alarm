@@ -12,9 +12,38 @@ from alarm import Alarm
 from buttons import SerialListener
 
 PORT = '/dev/ttyACM0'
+ALARMS = []
+
+alarms_from = (6, 0)
+alarms_by = 7
+alarms_count = 4
+
+for i in range(alarms_count):
+  tmp_h, tmp_m = alarms_from
+  tmp_m += alarms_by * i
+  while tmp_m > 60:
+    tmp_h += 1
+    tmp_m -= 60
+
+  ALARMS.append(Alarm(tmp_h, tmp_m))
+
+# ALARMS = [Alarm(6, 0), Alarm(6, 40), Alarm(6, 50)]
+# ALARMS = [Alarm(8, 55), Alarm(9, 0), Alarm(9, 10), Alarm(9, 15), Alarm(9, 30)]
+# ALARMS = [Alarm(7, 15), Alarm(7, 25), Alarm(7, 35), Alarm(7, 45)]
 # ALARMS = [Alarm(9, 15), Alarm(9, 25), Alarm(9, 35), Alarm(9, 45), Alarm(10, 0), Alarm(10, 15)]
-ALARMS = [Alarm(8, 30), Alarm(8, 45), Alarm(9, 0), Alarm(9, 15)]
+# ALARMS = [Alarm(8, 30), Alarm(8, 45), Alarm(9, 0)]
 SLEEP_ALL_ENDPOINT = 'http://192.168.0.193:8123/api/webhook/sleep_all'
+add_mins = 0
+if add_mins > 0:
+	for i in range(len(ALARMS)):
+		ALARMS[i].minute += add_mins
+		if ALARMS[i].minute > 59:
+			ALARMS[i].hour += ALARMS[i].minute // 60
+			ALARMS[i].minute %= 60
+
+now = datetime.datetime.now()
+for i in ALARMS:
+  print(i, i.from_now(now))
 
 TRIGGER_ALARM_ON_BOOT = False
 if TRIGGER_ALARM_ON_BOOT:
