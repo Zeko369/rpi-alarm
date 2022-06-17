@@ -27,13 +27,7 @@ for i in range(alarms_count):
 
   ALARMS.append(Alarm(tmp_h, tmp_m))
 
-# ALARMS = [Alarm(6, 0), Alarm(6, 40), Alarm(6, 50)]
-# ALARMS = [Alarm(8, 55), Alarm(9, 0), Alarm(9, 10), Alarm(9, 15), Alarm(9, 30)]
-# ALARMS = [Alarm(7, 15), Alarm(7, 25), Alarm(7, 35), Alarm(7, 45)]
-# ALARMS = [Alarm(9, 15), Alarm(9, 25), Alarm(9, 35), Alarm(9, 45), Alarm(10, 0), Alarm(10, 15)]
-# ALARMS = [Alarm(8, 30), Alarm(8, 45), Alarm(9, 0)]
-SLEEP_ALL_ENDPOINT = 'http://192.168.0.193:8123/api/webhook/sleep_all'
-add_mins = 0
+add_mins = 45
 if add_mins > 0:
 	for i in range(len(ALARMS)):
 		ALARMS[i].minute += add_mins
@@ -49,6 +43,8 @@ TRIGGER_ALARM_ON_BOOT = False
 if TRIGGER_ALARM_ON_BOOT:
     now = datetime.datetime.now()
     ALARMS.append(Alarm(now.hour, now.minute))
+
+SLEEP_ALL_ENDPOINT = 'http://192.168.0.193:8123/api/webhook/sleep_all'
 
 width = DisplayHATMini.WIDTH
 height = DisplayHATMini.HEIGHT
